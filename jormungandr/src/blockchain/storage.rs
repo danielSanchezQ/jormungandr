@@ -13,8 +13,8 @@ use futures03::{
     stream::{self, Stream},
 };
 use futures_util::compat::Compat;
-use std::{pin::Pin, sync::Arc};
-use tokio_02::{sync::Mutex, task::block_in_place};
+use std::{convert::identity, pin::Pin, sync::Arc};
+use tokio_02::{sync::Semaphore, task::spawn_blocking};
 use tokio_compat::prelude::*;
 
 pub use chain_storage::error::Error as StorageError;
@@ -39,11 +39,17 @@ impl ManageConnection for ConnectionManager {
 
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let inner = self.inner.clone();
-        block_in_place(move || inner.connect())
+        spawn_blocking(move || inner.connect())
+            .await
+            .map_err(|e| StorageError::BackendError(Box::new(e)))
+            .and_then(identity)
     }
 
     async fn is_valid(&self, conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
-        block_in_place(move || conn.ping().and(Ok(conn)))
+        spawn_blocking(move || conn.ping().and(Ok(conn)))
+            .await
+            .map_err(|e| StorageError::BackendError(Box::new(e)))
+            .and_then(identity)
     }
 
     fn has_broken(&self, conn: &mut Self::Connection) -> bool {
@@ -60,7 +66,7 @@ pub struct Storage03 {
     // sequence. Otherwise they can be performed out of the expected order (for
     // example, by different tokio executors) which eventually leads to a panic
     // because the block data would be inconsistent at the time of a write.
-    write_connection_lock: Arc<Mutex<NodeStorageConnection>>,
+    write_lock: Arc<Semaphore>,
 }
 
 // Compatibility layer for using new storage with old futures API.
@@ -85,28 +91,29 @@ impl Storage03 {
         block_on(async move {
             let manager = ConnectionManager::new(storage);
             let pool = Pool::builder().build(manager).await.unwrap();
-            let write_connection_lock =
-                Arc::new(Mutex::new(pool.dedicated_connection().await.unwrap()));
+            let write_lock = Arc::new(Semaphore::new(1));
 
-            Storage03 {
-                pool,
-                write_connection_lock,
-            }
+            Storage03 { pool, write_lock }
         })
     }
 
     async fn run<F, R>(&self, f: F) -> Result<R, StorageError>
     where
-        F: FnOnce(PooledConnection<'_, ConnectionManager>) -> Result<R, StorageError>,
+        F: FnOnce(PooledConnection<'_, ConnectionManager>) -> Result<R, StorageError>
+            + Send
+            + 'static,
+        R: Send + 'static,
     {
         let pool = self.pool.clone();
 
-        let connection = pool
-            .get()
-            .await
-            .map_err(|e| StorageError::BackendError(Box::new(e)))?;
-
-        block_in_place(move || f(connection))
+        spawn_blocking(move || {
+            let connection =
+                block_on(pool.get()).map_err(|e| StorageError::BackendError(Box::new(e)))?;
+            f(connection)
+        })
+        .await
+        .map_err(|e| StorageError::BackendError(Box::new(e)))
+        .and_then(identity)
     }
 
     pub async fn get_tag(&self, tag: String) -> Result<Option<HeaderHash>, StorageError> {
@@ -114,9 +121,9 @@ impl Storage03 {
     }
 
     pub async fn put_tag(&self, tag: String, header_hash: HeaderHash) -> Result<(), StorageError> {
-        let write_connection_lock = self.write_connection_lock.clone();
-        let mut guard = write_connection_lock.lock().await;
-        block_in_place(move || guard.put_tag(&tag, &header_hash))
+        let _ = self.write_lock.acquire().await;
+        self.run(move |mut connection| connection.put_tag(&tag, &header_hash))
+            .await
     }
 
     pub async fn get(&self, header_hash: HeaderHash) -> Result<Option<Block>, StorageError> {
@@ -152,13 +159,13 @@ impl Storage03 {
     }
 
     pub async fn put_block(&self, block: Block) -> Result<(), StorageError> {
-        let write_connection_lock = self.write_connection_lock.clone();
-        let mut guard = write_connection_lock.lock().await;
-        block_in_place(move || match guard.put_block(&block) {
+        let _ = self.write_lock.acquire().await;
+        self.run(move |mut connection| match connection.put_block(&block) {
             Err(StorageError::BlockNotFound) => unreachable!(),
             Err(e) => Err(e),
             Ok(()) => Ok(()),
         })
+        .await
     }
 
     /// Return values:
@@ -405,18 +412,16 @@ impl BlockIterState {
     async fn get_next(&mut self, pool: Pool<ConnectionManager>) -> Result<Block, StorageError> {
         assert!(self.has_next());
 
-        let store = pool
-            .get()
-            .await
-            .map_err(|e| StorageError::BackendError(Box::new(e)))?;
-
         self.cur_depth += 1;
 
         let block_info = self.pending_infos.pop().unwrap();
 
         let cur_depth = self.cur_depth;
 
-        let (mut pending_infos, block) = block_in_place(move || {
+        let (mut pending_infos, block) = spawn_blocking(move || {
+            let store =
+                block_on(pool.get()).map_err(|e| StorageError::BackendError(Box::new(e)))?;
+
             if block_info.depth == cur_depth {
                 // We've seen this block on a previous ancestor traversal.
                 let (block, _block_info) = store.get_block(&block_info.block_hash)?;
@@ -441,7 +446,10 @@ impl BlockIterState {
                 let (block, _block_info) = store.get_block(&block_info.block_hash)?;
                 Ok((pending_infos, block))
             }
-        })?;
+        })
+        .await
+        .map_err(|e| StorageError::BackendError(Box::new(e)))
+        .and_then(identity)?;
 
         self.pending_infos.append(&mut pending_infos);
 
