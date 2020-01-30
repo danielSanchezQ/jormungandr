@@ -7,17 +7,18 @@ use crate::{
     network,
     settings::start::Settings,
 };
-use chain_storage::store::BlockStore;
+use chain_storage::{error::Error as StorageError, store::BlockStore};
 use chain_storage_sqlite_old::{SQLiteBlockStore, SQLiteBlockStoreConnection};
 use slog::Logger;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
+use tokio_02::task::spawn_blocking;
 
 pub type NodeStorage = SQLiteBlockStore;
 pub type NodeStorageConnection = SQLiteBlockStoreConnection<Block>;
 
 /// prepare the block storage from the given settings
 ///
-pub fn prepare_storage(setting: &Settings, logger: &Logger) -> Result<NodeStorage, Error> {
+pub fn prepare_storage(setting: &Settings, logger: &Logger) -> Result<Arc<NodeStorage>, Error> {
     match &setting.storage {
         None => {
             info!(logger, "storing blockchain in memory");
@@ -34,6 +35,7 @@ pub fn prepare_storage(setting: &Settings, logger: &Logger) -> Result<NodeStorag
             Ok(SQLiteBlockStore::file(sqlite))
         }
     }
+    .map(Arc::new)
 }
 
 /// loading the block 0 is not as trivial as it seems,
@@ -45,7 +47,7 @@ pub fn prepare_storage(setting: &Settings, logger: &Logger) -> Result<NodeStorag
 ///     2. check the network nodes we know about
 pub async fn prepare_block_0(
     settings: &Settings,
-    storage: &NodeStorage,
+    storage: Arc<NodeStorage>,
     logger: &Logger,
 ) -> Result<Block, Error> {
     use crate::settings::Block0Info;
@@ -64,14 +66,22 @@ pub async fn prepare_block_0(
             })
         }
         Block0Info::Hash(block0_id) => {
-            let connection = storage.connect().unwrap();
+            let connection = spawn_blocking(move || storage.connect())
+                .await
+                .map_err(|e| StorageError::BackendError(Box::new(e)))
+                .and_then(std::convert::identity)?;
 
             if connection.block_exists(block0_id)? {
                 debug!(
                     logger,
                     "retrieving block0 from storage with hash {}", block0_id
                 );
-                let (block0, _block0_info) = connection.get_block(block0_id)?;
+                let block0_id = block0_id.clone();
+                let (block0, _block0_info) =
+                    spawn_blocking(move || connection.get_block(&block0_id))
+                        .await
+                        .map_err(|e| StorageError::BackendError(Box::new(e)))
+                        .and_then(std::convert::identity)?;
                 Ok(block0)
             } else {
                 debug!(
@@ -88,7 +98,7 @@ pub async fn prepare_block_0(
 
 pub fn load_blockchain(
     block0: Block,
-    storage: NodeStorage,
+    storage: Arc<NodeStorage>,
     block_cache_ttl: Duration,
 ) -> Result<(Blockchain, Tip), Error> {
     use tokio::prelude::*;

@@ -34,7 +34,7 @@ use futures::Future;
 use jormungandr_lib::interfaces::NodeState;
 use settings::{start::RawSettings, CommandLine};
 use slog::Logger;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 pub mod blockcfg;
 pub mod blockchain;
@@ -383,7 +383,7 @@ async fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode
 pub struct InitializedNode {
     pub settings: Settings,
     pub block0: blockcfg::Block,
-    pub storage: start_up::NodeStorage,
+    pub storage: Arc<start_up::NodeStorage>,
     pub logger: Logger,
     pub rest_context: Option<rest::Context>,
     pub services: Services,
@@ -454,7 +454,7 @@ async fn initialize_node() -> Result<InitializedNode, start_up::Error> {
     }
     let block0 = start_up::prepare_block_0(
         &settings,
-        &storage,
+        storage.clone(),
         &init_logger, /* add network to fetch block0 */
     )
     .await?;

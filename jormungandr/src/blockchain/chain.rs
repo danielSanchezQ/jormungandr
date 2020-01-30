@@ -237,7 +237,7 @@ impl PostCheckedHeader {
 }
 
 impl Blockchain {
-    pub fn new(block0: HeaderHash, storage: NodeStorage, ref_cache_ttl: Duration) -> Self {
+    pub fn new(block0: HeaderHash, storage: Arc<NodeStorage>, ref_cache_ttl: Duration) -> Self {
         Blockchain {
             branches: Branches::new(),
             ref_cache: RefCache::new(ref_cache_ttl),

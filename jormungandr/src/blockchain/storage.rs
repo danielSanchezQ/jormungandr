@@ -38,10 +38,8 @@ struct ConnectionManager {
 }
 
 impl ConnectionManager {
-    pub fn new(storage: NodeStorage) -> Self {
-        Self {
-            inner: Arc::new(storage),
-        }
+    pub fn new(inner: Arc<NodeStorage>) -> Self {
+        Self { inner }
     }
 }
 
@@ -94,7 +92,7 @@ struct BlockIterState {
 }
 
 impl Storage03 {
-    pub fn new(storage: NodeStorage) -> Self {
+    pub fn new(storage: Arc<NodeStorage>) -> Self {
         block_on(async move {
             let manager = ConnectionManager::new(storage);
             let pool = Pool::builder().build(manager).await.unwrap();
@@ -293,7 +291,7 @@ impl Storage03 {
 }
 
 impl Storage {
-    pub fn new(storage: NodeStorage) -> Self {
+    pub fn new(storage: Arc<NodeStorage>) -> Self {
         Self {
             inner: Storage03::new(storage),
         }
