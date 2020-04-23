@@ -12,7 +12,7 @@ use crate::{
     rest::Context,
     secure::NodeSecret,
 };
-use chain_core::property::{Block as _, Deserialize, Serialize, FromStr};
+use chain_core::property::{Block as _, Deserialize, FromStr, Serialize};
 use chain_crypto::{
     bech32::Bech32, digest::Error as DigestError, hash::Error as HashError, Blake2b256, PublicKey,
     PublicKeyFromStrError,
