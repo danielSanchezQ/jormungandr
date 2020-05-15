@@ -4,7 +4,6 @@ use crate::{
     node::{MemPoolCheck, ProgressBarController, Status},
     style, Context,
 };
-use bawawa::{Control, Process};
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
@@ -22,8 +21,10 @@ use jormungandr_lib::interfaces::{
 pub use jormungandr_testing_utils::testing::network_builder::{
     LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
 };
+use tokio::process::{Child as Process, Command};
 use yaml_rust::{Yaml, YamlLoader};
 
+use futures::{Future, StreamExt};
 use rand_core::RngCore;
 use std::{
     collections::HashMap,
@@ -31,6 +32,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
+use tokio::macros::support::{Pin, Poll};
 use tokio::prelude::*;
 
 error_chain! {
@@ -603,7 +605,7 @@ impl LegacyNode {
     }
 
     pub fn spawn<R: RngCore>(
-        jormungandr: &bawawa::Command,
+        jormungandr: &Command,
         context: &Context<R>,
         progress_bar: ProgressBar,
         alias: &str,
@@ -664,7 +666,7 @@ impl LegacyNode {
             }
         }
 
-        let process = Process::spawn(command).chain_err(|| ErrorKind::CannotSpawnNode)?;
+        let process = command.spawn().map_err(|| ErrorKind::CannotSpawnNode)?;
 
         let node = LegacyNode {
             alias: alias.into(),
@@ -683,15 +685,16 @@ impl LegacyNode {
         Ok(node)
     }
 
-    pub fn capture_logs(&mut self) -> impl Future<Item = (), Error = ()> {
-        let stderr = self.process.stderr().take().unwrap();
+    pub async fn capture_logs(&mut self) {
+        let stderr = self.process.stderr.unwrap();
 
-        let stderr = tokio::codec::FramedRead::new(stderr, tokio::codec::LinesCodec::new());
+        let stderr =
+            tokio_util::codec::FramedRead::new(stderr, tokio_util::codec::LinesCodec::new());
 
         let progress_bar = self.progress_bar.clone();
 
         stderr
-            .for_each(move |line| future::ok(progress_bar.log_info(&line)))
+            .for_each(move |line| futures::future::ok(progress_bar.log_info(&line)))
             .map_err(|err| unimplemented!("{}", err))
     }
 
@@ -733,20 +736,19 @@ impl LegacyNode {
     }
 }
 
-impl Future for LegacyNode {
-    type Item = ();
-    type Error = ();
+impl<RNG: RngCore + Sized> Future for LegacyNode {
+    type Output = ();
 
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<RNG>) -> Poll<Self::Output> {
         match self.process.poll() {
-            Err(err) => {
+            Poll::Ready(Err(err)) => {
                 self.progress_bar.log_err(&err);
                 self.progress_bar_failure();
                 self.set_status(Status::Failure);
-                Err(())
+                Poll::Ready(())
             }
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            Ok(Async::Ready(status)) => {
+            Poll::Pending => Poll::Pending,
+            Poll::Ready(Ok(status)) => {
                 if status.success() {
                     self.progress_bar_success();
                 } else {
@@ -754,22 +756,8 @@ impl Future for LegacyNode {
                     self.progress_bar_failure()
                 }
                 self.set_status(Status::Exit(status));
-                Ok(Async::Ready(()))
+                Poll::Ready(())
             }
         }
-    }
-}
-
-impl Control for LegacyNode {
-    fn command(&self) -> &bawawa::Command {
-        &self.process.command()
-    }
-
-    fn id(&self) -> u32 {
-        self.process.id()
-    }
-
-    fn kill(&mut self) -> bawawa::Result<()> {
-        self.process.kill()
     }
 }

@@ -8,10 +8,11 @@ edition = "2018"
 
 [dependencies]
 slog = "2"
-bawawa = "0.1.5"
 bytes = "0.4"
 error-chain = "0.12"
-tokio = "0.1"
+tokio = { version = "0.2.21", features = ["process"] }
+tokio-util = { version = "0.3.1", features = ["codec"] }
+futures = "0.3.5"
 mktemp = "0.4.0"
 chain-core           = { path = "../../chain-deps/chain-core" }
 chain-crypto         = { path = "../../chain-deps/chain-crypto", features = [ "property-test-api" ] }

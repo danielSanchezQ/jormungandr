@@ -1,3 +1,5 @@
+use crate::scenario::ProgressBarMode;
+use jormungandr_testing_utils::testing::network_builder::{Random, Seed};
 use rand_chacha::ChaChaRng;
 use rand_core::RngCore;
 use std::{
@@ -9,9 +11,7 @@ use std::{
         Arc,
     },
 };
-
-use crate::scenario::ProgressBarMode;
-use jormungandr_testing_utils::testing::network_builder::{Random, Seed};
+use tokio::process::Command;
 
 pub type ContextChaCha = Context<ChaChaRng>;
 
@@ -27,8 +27,8 @@ enum TestingDirectory {
 pub struct Context<RNG: RngCore + Sized> {
     rng: Random<RNG>,
 
-    jormungandr: bawawa::Command,
-    jcli: bawawa::Command,
+    jormungandr: Command,
+    jcli: Command,
 
     next_available_rest_port_number: Arc<AtomicU16>,
     next_available_grpc_port_number: Arc<AtomicU16>,
@@ -41,8 +41,8 @@ pub struct Context<RNG: RngCore + Sized> {
 impl Context<ChaChaRng> {
     pub fn new(
         seed: Seed,
-        jormungandr: bawawa::Command,
-        jcli: bawawa::Command,
+        jormungandr: Command,
+        jcli: Command,
         testing_directory: Option<PathBuf>,
         generate_documentation: bool,
         progress_bar_mode: ProgressBarMode,
@@ -95,11 +95,11 @@ impl Context<ChaChaRng> {
 }
 
 impl<RNG: RngCore> Context<RNG> {
-    pub fn jormungandr(&self) -> &bawawa::Command {
+    pub fn jormungandr(&self) -> &Command {
         &self.jormungandr
     }
 
-    pub fn jcli(&self) -> &bawawa::Command {
+    pub fn jcli(&self) -> &Command {
         &self.jcli
     }
 

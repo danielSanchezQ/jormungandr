@@ -1,7 +1,7 @@
 use bytes::BytesMut;
 use serde_json::{Map, Value};
 use std::convert::TryFrom;
-use tokio::codec::Decoder;
+use tokio_util::codec::Decoder;
 
 #[derive(Debug, Clone)]
 pub struct StructuredLog {
@@ -16,7 +16,7 @@ pub struct StructuredLog {
 /// For the testing purpose of jormungandr we will assume the structural
 /// logs to always be in JSON output format
 ///
-pub struct SlogCodec(tokio::codec::LinesCodec);
+pub struct SlogCodec(tokio_util::codec::LinesCodec);
 
 error_chain! {
     foreign_links {

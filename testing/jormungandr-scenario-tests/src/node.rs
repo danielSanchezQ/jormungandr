@@ -1,10 +1,10 @@
 use crate::{scenario::ProgressBarMode, style, Context};
-use bawawa::{Control, Process};
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
     header::HeaderId,
 };
+use futures::Future;
 use indicatif::ProgressBar;
 use jormungandr_integration_tests::{
     common::jormungandr::{logger::JormungandrLogger, JormungandrRest, RestError},
@@ -19,6 +19,7 @@ pub use jormungandr_testing_utils::testing::network_builder::{
     LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
 };
 use rand_core::RngCore;
+use std::fmt::Display;
 use std::{
     collections::HashMap,
     path::PathBuf,
@@ -26,7 +27,9 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
+use tokio::macros::support::{Pin, Poll};
 use tokio::prelude::*;
+use tokio::process::{Child as Process, Command};
 
 error_chain! {
     foreign_links {
@@ -577,7 +580,7 @@ impl Node {
     }
 
     pub fn spawn<R: RngCore>(
-        jormungandr: &bawawa::Command,
+        jormungandr: &Command,
         context: &Context<R>,
         progress_bar: ProgressBar,
         alias: &str,
@@ -658,14 +661,15 @@ impl Node {
     }
 
     pub fn capture_logs(&mut self) -> impl Future<Item = (), Error = ()> {
-        let stderr = self.process.stderr().take().unwrap();
+        let stderr = self.process.stderr.unwrap();
 
-        let stderr = tokio::codec::FramedRead::new(stderr, tokio::codec::LinesCodec::new());
+        let stderr =
+            tokio_util::codec::FramedRead::new(stderr, tokio_util::codec::LinesCodec::new());
 
         let progress_bar = self.progress_bar.clone();
 
         stderr
-            .for_each(move |line| future::ok(progress_bar.log_info(&line)))
+            .for_each(move |line| futures::future::ok(progress_bar.log_info(&line)))
             .map_err(|err| unimplemented!("{}", err))
     }
 
@@ -706,8 +710,6 @@ impl Node {
         *self.status.lock().unwrap() = status
     }
 }
-
-use std::fmt::Display;
 
 impl ProgressBarController {
     pub fn new(progress_bar: ProgressBar, prefix: String, logging_mode: ProgressBarMode) -> Self {
@@ -762,20 +764,19 @@ impl std::ops::Deref for ProgressBarController {
     }
 }
 
-impl Future for Node {
-    type Item = ();
-    type Error = ();
+impl<RNG: RngCore + Sized> Future for Node {
+    type Output = ();
 
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<RNG>) -> Poll<Self::Output> {
         match self.process.poll() {
-            Err(err) => {
+            Poll::Ready(Err(err)) => {
                 self.progress_bar.log_err(&err);
                 self.progress_bar_failure();
                 self.set_status(Status::Failure);
-                Err(())
+                Poll::Ready(())
             }
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            Ok(Async::Ready(status)) => {
+            Poll::Pending => Poll::Pending,
+            Poll::Ready(Ok(status)) => {
                 if status.success() {
                     self.progress_bar_success();
                 } else {
@@ -783,22 +784,8 @@ impl Future for Node {
                     self.progress_bar_failure()
                 }
                 self.set_status(Status::Exit(status));
-                Ok(Async::Ready(()))
+                Poll::Ready(())
             }
         }
-    }
-}
-
-impl Control for Node {
-    fn command(&self) -> &bawawa::Command {
-        &self.process.command()
-    }
-
-    fn id(&self) -> u32 {
-        self.process.id()
-    }
-
-    fn kill(&mut self) -> bawawa::Result<()> {
-        self.process.kill()
     }
 }
