@@ -27,8 +27,8 @@ enum TestingDirectory {
 pub struct Context<RNG: RngCore + Sized> {
     rng: Random<RNG>,
 
-    jormungandr: Command,
-    jcli: Command,
+    jormungandr: Arc<Command>,
+    jcli: Arc<Command>,
 
     next_available_rest_port_number: Arc<AtomicU16>,
     next_available_grpc_port_number: Arc<AtomicU16>,
@@ -38,11 +38,20 @@ pub struct Context<RNG: RngCore + Sized> {
     progress_bar_mode: ProgressBarMode,
 }
 
+// impl<RNG: RngCore + Sized> Clone for Context<RNG> {
+//     fn clone(&self) -> Self {
+//         Self {
+//             rng: self.rng.clone(),
+//             jormungandr: self.jormungandr.
+//         }
+//     }
+// }
+
 impl Context<ChaChaRng> {
     pub fn new(
         seed: Seed,
-        jormungandr: Command,
-        jcli: Command,
+        jormungandr: Arc<Command>,
+        jcli: Arc<Command>,
         testing_directory: Option<PathBuf>,
         generate_documentation: bool,
         progress_bar_mode: ProgressBarMode,
@@ -77,8 +86,8 @@ impl Context<ChaChaRng> {
             rng,
             next_available_rest_port_number: Arc::clone(&self.next_available_rest_port_number),
             next_available_grpc_port_number: Arc::clone(&self.next_available_grpc_port_number),
-            jormungandr: self.jormungandr().clone(),
-            jcli: self.jcli().clone(),
+            jormungandr: self.jormungandr.clone(),
+            jcli: self.jormungandr.clone(),
             testing_directory: self.testing_directory.clone(),
             generate_documentation: self.generate_documentation.clone(),
             progress_bar_mode: self.progress_bar_mode.clone(),
@@ -95,12 +104,12 @@ impl Context<ChaChaRng> {
 }
 
 impl<RNG: RngCore> Context<RNG> {
-    pub fn jormungandr(&self) -> &Command {
-        &self.jormungandr
+    pub fn jormungandr(&self) -> Arc<Command> {
+        self.jormungandr.clone()
     }
 
-    pub fn jcli(&self) -> &Command {
-        &self.jcli
+    pub fn jcli(&self) -> Arc<Command> {
+        self.jcli.clone()
     }
 
     pub fn random(&mut self) -> &mut Random<RNG> {

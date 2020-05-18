@@ -9,6 +9,7 @@ use chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
     header::HeaderId,
 };
+use futures::{stream::Stream, Future, StreamExt};
 use indicatif::ProgressBar;
 use jormungandr_integration_tests::{
     common::jormungandr::logger::JormungandrLogger,
@@ -21,11 +22,7 @@ use jormungandr_lib::interfaces::{
 pub use jormungandr_testing_utils::testing::network_builder::{
     LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
 };
-use tokio::process::{Child as Process, Command};
-use yaml_rust::{Yaml, YamlLoader};
-
-use futures::{Future, StreamExt};
-use rand_core::RngCore;
+use rand::RngCore;
 use std::{
     collections::HashMap,
     path::PathBuf,
@@ -34,6 +31,8 @@ use std::{
 };
 use tokio::macros::support::{Pin, Poll};
 use tokio::prelude::*;
+use tokio::process::{Child as Process, Command};
+use yaml_rust::{Yaml, YamlLoader};
 
 error_chain! {
     foreign_links {
@@ -646,7 +645,7 @@ impl LegacyNode {
         )
         .chain_err(|| format!("cannot write in {:?}", config_secret))?;
 
-        command.arguments(&[
+        command.args(&[
             "--config",
             &config_file.display().to_string(),
             "--log-level=warn",
@@ -654,7 +653,7 @@ impl LegacyNode {
 
         match block0 {
             NodeBlock0::File(path) => {
-                command.arguments(&[
+                command.args(&[
                     "--genesis-block",
                     &path.display().to_string(),
                     "--secret",
@@ -662,11 +661,11 @@ impl LegacyNode {
                 ]);
             }
             NodeBlock0::Hash(hash) => {
-                command.arguments(&["--genesis-block-hash", &hash.to_string()]);
+                command.args(&["--genesis-block-hash", &hash.to_string()]);
             }
         }
 
-        let process = command.spawn().map_err(|| ErrorKind::CannotSpawnNode)?;
+        let process = command.spawn().map_err(|_| ErrorKind::CannotSpawnNode)?;
 
         let node = LegacyNode {
             alias: alias.into(),
@@ -686,16 +685,19 @@ impl LegacyNode {
     }
 
     pub async fn capture_logs(&mut self) {
-        let stderr = self.process.stderr.unwrap();
+        let stderr = self.process.stderr.as_mut().unwrap();
 
         let stderr =
             tokio_util::codec::FramedRead::new(stderr, tokio_util::codec::LinesCodec::new());
 
         let progress_bar = self.progress_bar.clone();
 
-        stderr
-            .for_each(move |line| futures::future::ok(progress_bar.log_info(&line)))
-            .map_err(|err| unimplemented!("{}", err))
+        stderr.map(move |res| match res {
+            Ok(line) => {
+                progress_bar.log_info(&line);
+            }
+            Err(err) => unimplemented!("{}", err),
+        });
     }
 
     fn progress_bar_start(&self) {
@@ -736,10 +738,10 @@ impl LegacyNode {
     }
 }
 
-impl<RNG: RngCore + Sized> Future for LegacyNode {
+impl Future for LegacyNode {
     type Output = ();
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<RNG>) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context) -> Poll<Self::Output> {
         match self.process.poll() {
             Poll::Ready(Err(err)) => {
                 self.progress_bar.log_err(&err);

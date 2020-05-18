@@ -14,6 +14,7 @@ use jormungandr_lib::interfaces::Value;
 use jormungandr_testing_utils::testing::network_builder::{
     Blockchain, LeadershipMode, PersistenceMode, Settings, SpawnParams, Topology,
 };
+use std::time::Duration;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -192,7 +193,9 @@ impl Controller {
         };
 
         let jormungandr = match &params.get_jormungandr() {
-            Some(jormungandr) => prepare_command(jormungandr.clone()),
+            Some(jormungandr) => {
+                Arc::new(self.runtime.block_on(prepare_command(jormungandr.clone())))
+            }
             None => self.context.jormungandr().clone(),
         };
 
@@ -216,8 +219,8 @@ impl Controller {
         )?;
         let controller = node.controller();
 
-        self.runtime.executor().spawn(node.capture_logs());
-        self.runtime.executor().spawn(node);
+        self.runtime.spawn(node.capture_logs());
+        self.runtime.spawn(node);
 
         Ok(controller)
     }
@@ -239,7 +242,9 @@ impl Controller {
         };
 
         let jormungandr = match &params.get_jormungandr() {
-            Some(jormungandr) => prepare_command(jormungandr.clone()),
+            Some(jormungandr) => {
+                Arc::new(self.runtime.block_on(prepare_command(jormungandr.clone())))
+            }
             None => self.context.jormungandr().clone(),
         };
 
@@ -258,8 +263,8 @@ impl Controller {
         )?;
         let controller = node.controller();
 
-        self.runtime.executor().spawn(node.capture_logs());
-        self.runtime.executor().spawn(node);
+        self.runtime.spawn(node.capture_logs());
+        self.runtime.spawn(node);
 
         Ok(controller)
     }
@@ -298,7 +303,7 @@ impl Controller {
     }
 
     pub fn finalize(self) {
-        self.runtime.shutdown_now().wait().unwrap();
+        self.runtime.shutdown_timeout(Duration::from_secs(0));
         if let Some(thread) = self.progress_bar_thread {
             thread.join().unwrap()
         }

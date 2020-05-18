@@ -4,7 +4,7 @@ use chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
     header::HeaderId,
 };
-use futures::Future;
+use futures::{stream::Stream, Future, StreamExt};
 use indicatif::ProgressBar;
 use jormungandr_integration_tests::{
     common::jormungandr::{logger::JormungandrLogger, JormungandrRest, RestError},
@@ -18,7 +18,7 @@ use jormungandr_lib::interfaces::{
 pub use jormungandr_testing_utils::testing::network_builder::{
     LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
 };
-use rand_core::RngCore;
+use rand::RngCore;
 use std::fmt::Display;
 use std::{
     collections::HashMap,
@@ -27,6 +27,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
+
 use tokio::macros::support::{Pin, Poll};
 use tokio::prelude::*;
 use tokio::process::{Child as Process, Command};
@@ -621,7 +622,7 @@ impl Node {
         )
         .chain_err(|| format!("cannot write in {:?}", config_secret))?;
 
-        command.arguments(&[
+        command.args(&[
             "--config",
             &config_file.display().to_string(),
             "--log-level=warn",
@@ -629,7 +630,7 @@ impl Node {
 
         match block0 {
             NodeBlock0::File(path) => {
-                command.arguments(&[
+                command.args(&[
                     "--genesis-block",
                     &path.display().to_string(),
                     "--secret",
@@ -637,11 +638,11 @@ impl Node {
                 ]);
             }
             NodeBlock0::Hash(hash) => {
-                command.arguments(&["--genesis-block-hash", &hash.to_string()]);
+                command.args(&["--genesis-block-hash", &hash.to_string()]);
             }
         }
 
-        let process = Process::spawn(command).chain_err(|| ErrorKind::CannotSpawnNode)?;
+        let process = command.spawn().chain_err(|| ErrorKind::CannotSpawnNode)?;
 
         let node = Node {
             alias: alias.into(),
@@ -660,17 +661,20 @@ impl Node {
         Ok(node)
     }
 
-    pub fn capture_logs(&mut self) -> impl Future<Item = (), Error = ()> {
-        let stderr = self.process.stderr.unwrap();
+    pub async fn capture_logs(&mut self) {
+        let stderr = self.process.stderr.as_mut().unwrap();
 
         let stderr =
             tokio_util::codec::FramedRead::new(stderr, tokio_util::codec::LinesCodec::new());
 
         let progress_bar = self.progress_bar.clone();
 
-        stderr
-            .for_each(move |line| futures::future::ok(progress_bar.log_info(&line)))
-            .map_err(|err| unimplemented!("{}", err))
+        stderr.map(move |res| match res {
+            Ok(line) => {
+                progress_bar.log_info(&line);
+            }
+            Err(err) => unimplemented!("{}", err),
+        });
     }
 
     fn progress_bar_start(&self) {
@@ -764,10 +768,10 @@ impl std::ops::Deref for ProgressBarController {
     }
 }
 
-impl<RNG: RngCore + Sized> Future for Node {
+impl Future for Node {
     type Output = ();
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<RNG>) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context) -> Poll<Self::Output> {
         match self.process.poll() {
             Poll::Ready(Err(err)) => {
                 self.progress_bar.log_err(&err);

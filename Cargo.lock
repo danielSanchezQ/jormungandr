@@ -1634,7 +1634,7 @@ dependencies = [
 name = "jormungandr-scenario-tests"
 version = "0.9.0-nightly"
 dependencies = [
- "bytes 0.4.12",
+ "bytes 0.5.4",
  "chain-addr",
  "chain-core",
  "chain-crypto",
