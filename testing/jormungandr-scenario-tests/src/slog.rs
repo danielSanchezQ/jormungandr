@@ -73,12 +73,12 @@ impl Decoder for SlogCodec {
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>> {
         // TODO: properly handle errors here?
         let line = match self.0.decode(buf) {
-            Ok(Some(str)) => Some(str.as_str()),
+            Ok(Some(str)) => Some(str),
             _ => None,
         };
 
         if let Some(line) = line {
-            serde_json::from_str(line)
+            serde_json::from_str(line.as_str())
                 .chain_err(|| ErrorKind::InvalidJSON)
                 .and_then(|map: Map<_, _>| StructuredLog::try_from(map))
                 .map(Some)

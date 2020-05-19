@@ -208,7 +208,7 @@ impl Controller {
         println!("settings: {:?}, debug: {:?}", legacy_node_settings, version);
 
         let mut node = LegacyNode::spawn(
-            &jormungandr,
+            jormungandr,
             &self.context,
             pb,
             &params.get_alias(),
@@ -252,7 +252,7 @@ impl Controller {
         let pb = self.progress_bar.add(pb);
 
         let mut node = Node::spawn(
-            &jormungandr,
+            jormungandr,
             &self.context,
             pb,
             &params.get_alias(),

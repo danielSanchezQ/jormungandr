@@ -604,7 +604,7 @@ impl LegacyNode {
     }
 
     pub fn spawn<R: RngCore>(
-        jormungandr: &Command,
+        jormungandr: Arc<Command>,
         context: &Context<R>,
         progress_bar: ProgressBar,
         alias: &str,
@@ -613,7 +613,7 @@ impl LegacyNode {
         working_dir: &PathBuf,
         peristence_mode: PersistenceMode,
     ) -> Result<Self> {
-        let mut command = jormungandr.clone();
+        let command = jormungandr.clone();
         let dir = working_dir.join(alias);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
@@ -742,7 +742,10 @@ impl Future for LegacyNode {
     type Output = ();
 
     fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context) -> Poll<Self::Output> {
-        match self.process.poll() {
+        let process = self.process;
+        futures::pin_mut!(process);
+
+        match process.poll(cx) {
             Poll::Ready(Err(err)) => {
                 self.progress_bar.log_err(&err);
                 self.progress_bar_failure();
