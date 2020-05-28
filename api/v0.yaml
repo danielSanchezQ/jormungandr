@@ -616,6 +616,13 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            text/plain:
+              schema:
+                description: Hex-encoded ID of the posted transaction
+                type: string
+                pattern: '[0-9a-f]+'
+              example: 68dcc12fe0dfe5e7b66ca6f8c959f9aa43b273e120a77fc3e4e2f04f1ecd7968
         '400':
           description: Message is malformed
 
@@ -2291,6 +2298,10 @@ paths:
                       type: string
                       description: Epoch and slot ID of committee end time
                       pattern: "[0-9]+\\.[0-9]+"
+                    payload_type:
+                      type: string
+                      description: the type of payload to expect
+                      enum: ["Public"]
                     proposals:
                       type: array
                       description: Active proposals
@@ -2307,14 +2318,19 @@ paths:
                           options:
                             type: object
                             properties:
-                              OneOf:
+                              range:
                                 type: object
                                 properties:
-                                  max_value:
+                                  start:
                                     type: integer
-                                    description: Maximum number of options
-                                    minimum: 1
+                                    description: starting value of the vote option, starting from 0
+                                    minimum: 0
                                     maximum: 15
+                                  end:
+                                    type: integer
+                                    description: upper bound of the available options, maximum being 16 (not included)
+                                    minimum: 1
+                                    maximum: 16
                         required:
                           - external_id
                           - options
@@ -2322,29 +2338,33 @@ paths:
                     - vote_start
                     - vote_end
                     - committee_end
+                    - payload_type
                     - proposals
               examples:
-                committee:
+                voteplan:
                   value: [
                     {
                       "committee_end": {
                         "epoch": 10,
                         "slot_id": 0
                       },
+                      "payload_type": "Public",
                       "proposals": [
                         {
                           "external_id": "adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280",
                           "options": {
-                            "OneOf": {
-                              "max_value": 3
+                            "range": {
+                              "start": 0,
+                              "end": 3
                             }
                           }
                         },
                         {
                           "external_id": "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404",
                           "options": {
-                            "OneOf": {
-                              "max_value": 3
+                            "range": {
+                              "start": 0,
+                              "end": 3
                             }
                           }
                         }
