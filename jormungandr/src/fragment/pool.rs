@@ -12,14 +12,12 @@ use chain_impl_mockchain::{fragment::Contents, transaction::Transaction};
 use futures::channel::mpsc::SendError;
 use futures::sink::SinkExt;
 use jormungandr_lib::interfaces::{FragmentLog, FragmentOrigin, FragmentStatus};
-use slog::Logger;
 use thiserror::Error;
 
 pub struct Pool {
     logs: Logs,
     pool: internal::Pool,
     network_msg_box: MessageBox<NetworkMsg>,
-    logger: Logger,
 }
 
 #[derive(Debug, Error)]
@@ -29,17 +27,11 @@ pub enum Error {
 }
 
 impl Pool {
-    pub fn new(
-        max_entries: usize,
-        logs: Logs,
-        network_msg_box: MessageBox<NetworkMsg>,
-        logger: Logger,
-    ) -> Self {
+    pub fn new(max_entries: usize, logs: Logs, network_msg_box: MessageBox<NetworkMsg>) -> Self {
         Pool {
             logs,
             pool: internal::Pool::new(max_entries),
             network_msg_box,
-            logger,
         }
     }
 
@@ -53,10 +45,10 @@ impl Pool {
         origin: FragmentOrigin,
         mut fragments: Vec<Fragment>,
     ) -> Result<usize, Error> {
-        debug!(self.logger, "received {} fragments", fragments.len(); "origin" => ?origin);
+        tracing::debug!(origin = ?origin, "received {} fragments", fragments.len());
         fragments.retain(is_fragment_valid);
         if fragments.is_empty() {
-            debug!(self.logger, "none of the received fragments are valid");
+            tracing::debug!("none of the received fragments are valid");
             return Ok(0);
         }
         let mut network_msg_box = self.network_msg_box.clone();
@@ -69,10 +61,7 @@ impl Pool {
             .map(|(fragment, _)| fragment);
         let new_fragments = self.pool.insert_all(new_fragments);
         let count = new_fragments.len();
-        debug!(
-            self.logger,
-            "{} of the received fragments were added to the pool", count
-        );
+        tracing::debug!("{} of the received fragments were added to the pool", count);
         let fragment_logs = new_fragments
             .iter()
             .map(move |fragment| FragmentLog::new(fragment.id(), origin))
