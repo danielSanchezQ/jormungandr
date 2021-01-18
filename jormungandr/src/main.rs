@@ -266,9 +266,8 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
             .settings
             .no_blockchain_updates_warning_interval;
 
-        services.spawn_future("stuck_notifier", move |info| {
+        services.spawn_future("stuck_notifier", move |_| {
             stuck_notifier::check_last_block_time(
-                info,
                 blockchain_tip,
                 no_blockchain_updates_warning_interval,
             )
@@ -320,14 +319,7 @@ fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode, star
         rest_context,
         settings,
     } = services.block_on_task("bootstrap", |info| {
-        bootstrap_internal(
-            rest_context,
-            info.logger().clone(),
-            block0,
-            storage,
-            settings,
-            cancellation_token,
-        )
+        bootstrap_internal(rest_context, block0, storage, settings, cancellation_token)
     })?;
 
     Ok(BootstrappedNode {
@@ -353,7 +345,6 @@ struct BootstrapData {
 
 async fn bootstrap_internal(
     rest_context: Option<rest::ContextLock>,
-    logger: Logger,
     block0: blockcfg::Block,
     storage: blockchain::Storage,
     settings: Settings,
@@ -401,10 +392,7 @@ async fn bootstrap_internal(
         // bootstrap loop.
         if let Some(max_bootstrap_attempt) = settings.network.max_bootstrap_attempts {
             if bootstrap_attempt > max_bootstrap_attempt {
-                warn!(
-                    &logger,
-                    "maximum allowable bootstrap attempts exceeded, continuing..."
-                );
+                tracing::warn!("maximum allowable bootstrap attempts exceeded, continuing...");
                 break; // maximum bootstrap attempts exceeded, exit loop
             };
         }
@@ -422,8 +410,7 @@ async fn bootstrap_internal(
             break; // bootstrap succeeded, exit loop
         }
 
-        info!(
-            &logger,
+        tracing::info!(
             "bootstrap attempt #{} failed, trying again in {} seconds...",
             bootstrap_attempt,
             BOOTSTRAP_RETRY_WAIT.as_secs()
@@ -515,7 +502,7 @@ fn init_os_signal_watchers(services: &mut Services, token: CancellationToken) {
                 future::ready(()).left_future()
             }
             Err(e) => {
-                warn!(info.logger(), "ctrl+c watcher failed"; "reason" => %e);
+                tracing::warn!(reason = %e, "ctrl+c watcher failed");
                 future::pending().right_future()
             }
         })
