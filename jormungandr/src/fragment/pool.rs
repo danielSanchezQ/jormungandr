@@ -92,7 +92,7 @@ impl Pool {
         let Pool { logs, pool, .. } = self;
         match selection_alg {
             FragmentSelectionAlgorithmParams::OldestFirst => {
-                let mut selection_alg = OldestFirst::new(self.logger.clone());
+                let mut selection_alg = OldestFirst::new();
                 selection_alg.select(&ledger, &ledger_params, block_date, logs, pool);
                 selection_alg.finalize()
             }
