@@ -531,7 +531,7 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
 
     let settings = raw_settings.try_into_settings()?;
 
-    let storage = start_up::prepare_storage(&settings, &init_logger)?;
+    let storage = start_up::prepare_storage(&settings)?;
     if exit_after_storage_setup {
         tracing::info!("Exiting after successful storage setup");
         std::mem::drop(_enter);
@@ -569,6 +569,8 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         }
         None => None,
     };
+
+    let storage = start_up::prepare_storage(&settings)?;
 
     // TODO: load network module here too (if needed)
 
