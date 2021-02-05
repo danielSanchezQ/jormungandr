@@ -370,6 +370,11 @@ pub async fn pull_blocks_correct_hashes_all_blocks() {
     let blocks_hashes: Vec<Hash> = blocks.iter().map(|x| x.header.hash()).collect();
 
     let block_hashes_from_logs = server.logger.get_created_blocks_hashes();
+    std::fs::copy(
+        config.log_file_path(),
+        std::path::Path::new("./tracing_test.log"),
+    )
+    .unwrap();
     assert_eq!(block_hashes_from_logs, blocks_hashes);
 }
 
