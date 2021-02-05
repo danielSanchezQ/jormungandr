@@ -9,6 +9,7 @@ use jormungandr_lib::interfaces::FragmentStatus;
 
 use tracing::{span, Level};
 
+use std::error::Error;
 use std::iter;
 
 pub enum SelectionOutput {
@@ -72,14 +73,14 @@ impl FragmentSelectionAlgorithm for OldestFirst {
             let fragment_raw = fragment.to_raw(); // TODO: replace everything to FragmentRaw in the node
             let fragment_size = fragment_raw.size_bytes_plus_size() as u32;
 
-            let logger = self.logger.new(o!("hash" => id.to_string()));
-
+            let span = span!(Level::TRACE, "fragment_selection_algorithm", kind="older_first", hash=%id.to_string());
+            let _enter = span.enter();
             if fragment_size > ledger_params.block_content_max_size {
                 let reason = format!(
                     "fragment size {} exceeds maximum block content size {}",
                     fragment_size, ledger_params.block_content_max_size
                 );
-                debug!(logger, "{}", reason);
+                tracing::debug!("{}", reason);
                 logs.modify(id, FragmentStatus::Rejected { reason });
                 continue;
             }
