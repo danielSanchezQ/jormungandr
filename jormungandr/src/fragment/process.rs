@@ -106,7 +106,7 @@ impl Process {
 
             Ok(())
         }
-        .instrument(span!(parent: service_info.span(), Level::TRACE, "process", name = "fragment"))
+        .instrument(span!(parent: service_info.span(), Level::TRACE, "process", kind = "fragment"))
         .await
     }
 }
