@@ -434,7 +434,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -478,7 +478,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
@@ -491,7 +491,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "chain-ser",
 ]
@@ -499,7 +499,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
@@ -520,7 +520,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "cardano-legacy-address",
  "cfg-if 1.0.0",
@@ -550,7 +550,7 @@ dependencies = [
 [[package]]
 name = "chain-network"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "async-trait",
  "chain-crypto",
@@ -566,12 +566,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "criterion",
  "data-pile",
@@ -584,7 +584,7 @@ dependencies = [
 [[package]]
 name = "chain-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "chain-core",
  "quickcheck",
@@ -594,7 +594,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -606,7 +606,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "cryptoxide",
  "eccoxide",
@@ -1757,7 +1757,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 dependencies = [
  "thiserror",
 ]
@@ -1778,7 +1778,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.13.0",
+ "console 0.14.1",
  "lazy_static",
  "number_prefix",
  "regex",
@@ -2097,7 +2097,7 @@ dependencies = [
  "keynesis",
  "lazy_static",
  "netstat2",
- "os_info 3.0.2",
+ "os_info 3.0.4",
  "parity-multiaddr",
  "poldercast",
  "prost",
@@ -2623,9 +2623,9 @@ dependencies = [
 
 [[package]]
 name = "os_info"
-version = "3.0.2"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4181c9203e70e66f39def4240a7e33f74d1d95b42c08320f9ac298c580934ab2"
+checksum = "afaa687e89d04fcd3573987b14965578e54434a120c9477500e24b95b6fe79ee"
 dependencies = [
  "log",
  "winapi",
@@ -3641,7 +3641,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 
 [[package]]
 name = "spin"
@@ -4357,7 +4357,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#e87c3b31ccbcfc7d6fa2c2e4d8f77a0e3c31461b"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#2650f1f27ec8c72657d87a978b22e8e5e514899c"
 
 [[package]]
 name = "typenum"
