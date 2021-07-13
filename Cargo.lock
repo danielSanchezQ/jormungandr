@@ -541,7 +541,7 @@ dependencies = [
  "chain-crypto",
  "futures",
  "pin-project",
- "prost",
+ "prost 0.7.0",
  "rand_core 0.6.3",
  "thiserror",
  "tonic",
@@ -593,7 +593,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ee02dfff1a76df36355501eb2c4f5bb4321d3c55"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
  "cryptoxide",
@@ -1918,7 +1918,7 @@ dependencies = [
  "parity-multiaddr",
  "poldercast",
  "predicates 2.0.0",
- "prost",
+ "prost 0.8.0",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "rand_core 0.6.3",
@@ -2047,7 +2047,7 @@ dependencies = [
  "os_info 3.0.6",
  "parity-multiaddr",
  "poldercast",
- "prost",
+ "prost 0.8.0",
  "qrcodegen",
  "quircs",
  "rand 0.8.4",
@@ -2894,7 +2894,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e6984d2f1a23009bd270b8bb56d0926810a3d483f59c987d77969e9d8e840b2"
 dependencies = [
  "bytes",
- "prost-derive",
+ "prost-derive 0.7.0",
+]
+
+[[package]]
+name = "prost"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de5e2533f59d08fcf364fd374ebda0692a70bd6d7e66ef97f306f45c6c5d8020"
+dependencies = [
+ "bytes",
+ "prost-derive 0.8.0",
 ]
 
 [[package]]
@@ -2909,7 +2919,7 @@ dependencies = [
  "log",
  "multimap",
  "petgraph",
- "prost",
+ "prost 0.7.0",
  "prost-types",
  "tempfile",
  "which",
@@ -2929,13 +2939,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "prost-derive"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "600d2f334aa05acb02a755e217ef1ab6dea4d51b58b7846588b747edec04efba"
+dependencies = [
+ "anyhow",
+ "itertools 0.10.0",
+ "proc-macro2 1.0.27",
+ "quote 1.0.9",
+ "syn 1.0.72",
+]
+
+[[package]]
 name = "prost-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b518d7cdd93dab1d1122cf07fa9a60771836c668dde9d9e2a139f957f0d9f1bb"
 dependencies = [
  "bytes",
- "prost",
+ "prost 0.7.0",
 ]
 
 [[package]]
@@ -3956,8 +3979,8 @@ dependencies = [
  "hyper",
  "percent-encoding",
  "pin-project",
- "prost",
- "prost-derive",
+ "prost 0.7.0",
+ "prost-derive 0.7.0",
  "tokio",
  "tokio-stream",
  "tokio-util",
