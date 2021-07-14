@@ -164,14 +164,14 @@ genesis praos as the consensus layer.</p>
 <p><code>consensus_genesis_praos_active_slot_coeff</code> determines minimum stake required to
 try becoming slot leader, must be in range 0 exclusive and 1 inclusive.</p>
 <h2 id="the-initial-certificates"><a class="header" href="#the-initial-certificates">The initial certificates</a></h2>
-<p>In the <code>initial_certs</code> field you will set the initial certificate. This is important
-to declare the stake pool and delegate stake to them. Otherwise no block will be ever
+<p>In the <code>initial_certs</code> field you will set the initial certificate. It is important
+to declare the stake pool and delegate stake to them. Otherwise no block will ever be
 created.</p>
 <p>Remember that in this array the <strong>order</strong> matters:</p>
 <p>In order to delegate your stake, you need a stake pool to already exist, so the stake pool registration certificate should go first.</p>
 <h3 id="stake-pool-registration"><a class="header" href="#stake-pool-registration">Stake pool registration</a></h3>
 <p>Now you can register a stake pool.
-Follow the instruction in <a href="../stake_pool/registering_stake_pool.html">registering stake pool guide</a>.</p>
+Follow the instructions in <a href="../stake_pool/registering_stake_pool.html">registering stake pool guide</a>.</p>
 <p>The <em>owner key</em> (the key you sign the stake pool registration certificate) is the secret
 key associated to a previously registered stake key.</p>
 <h3 id="delegating-stake"><a class="header" href="#delegating-stake">Delegating stake</a></h3>
@@ -185,7 +185,7 @@ registered previously as group address:</p>
 ta1sjx4j3jwel94g0cgwzq9au7h6m8f5q3qnyh0gfnryl3xan6qnmjse3k2uv062mzj34eacjnxthxqv8fvdcn6f4xhxwa7ms729ak3gsl4qrq2mm
 </code></pre>
 <p>You will notice that addresses with delegation are longer (about twice longer) than
-address without delegation.</p>
+addresses without delegation.</p>
 <p>For example, the most minimal setting you may have is:</p>
 <pre><code class="language-yaml">initial_certs:
   # register a stake pool (P), owner of the stake pool is the stake key (K)
@@ -203,7 +203,7 @@ initial_funds:
     value: 1000000
 </code></pre>
 <h3 id="starting-the-node"><a class="header" href="#starting-the-node">Starting the node</a></h3>
-<p>Now, for starting the node and be able to generate new blocks, you have to put your pool's private keys and id in a file and start the node with the <code>--secret filename</code> parameter.</p>
+<p>Now, to start the node and be able to generate new blocks, you have to put your pool's private keys and id in a file and start the node with the <code>--secret filename</code> parameter.</p>
 <hr />
 <p>For example, if you follow the examples of the <a href="../stake_pool/registering_stake_pool.html">registering stake pool guide</a></p>
 <p>You could create a file called poolsecret.yaml with the following content.</p>

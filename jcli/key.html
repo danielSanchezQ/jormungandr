@@ -149,10 +149,10 @@
 <p>There are multiple type of key for multiple use cases.</p>
 <table><thead><tr><th align="center">type</th><th align="left">usage</th></tr></thead><tbody>
 <tr><td align="center"><code>Ed25519</code></td><td align="left">Signing algorithm for Ed25519 algorithm</td></tr>
-<tr><td align="center"><code>Ed25519Bip32</code></td><td align="left">Related to the HDWallet, Ed25519 Extended with chain code for derivation derivation</td></tr>
+<tr><td align="center"><code>Ed25519Bip32</code></td><td align="left">Related to the HDWallet, Ed25519 Extended with chain code for derivation</td></tr>
 <tr><td align="center"><code>Ed25519Extended</code></td><td align="left">Related to <code>Ed25519Bip32</code> without the chain code</td></tr>
 <tr><td align="center"><code>SumEd25519_12</code></td><td align="left">For stake pool, necessary for the KES</td></tr>
-<tr><td align="center"><code>Curve25519_2HashDH</code></td><td align="left">For stake pool, necessary for the VRF</td></tr>
+<tr><td align="center"><code>RistrettoGroup2HashDh</code></td><td align="left">For stake pool, necessary for the VRF</td></tr>
 </tbody></table>
 <p>There is a command line parameter to generate this keys:</p>
 <pre><code class="language-sh">$ jcli key generate --type=Ed25519

@@ -162,7 +162,7 @@ the stake pool before distributing rewards (if any left) to the delegators.</li>
 <h3 id="vrf-key-pair"><a class="header" href="#vrf-key-pair">VRF key pair</a></h3>
 <p>To generate your <a href="https://en.wikipedia.org/wiki/Verifiable_random_function"><strong>VRF</strong></a> Key pairs, we will utilise <a href="../jcli/introduction.html"><code>jcli</code></a> as described
 <a href="../jcli/key.html">here</a>:</p>
-<pre><code class="language-sh">jcli key generate --type=Curve25519_2HashDH stake_pool_vrf.prv
+<pre><code class="language-sh">jcli key generate --type=RistrettoGroup2HashDhH stake_pool_vrf.prv
 </code></pre>
 <p><code>stake_pool_vrf.prv</code> file now contains the VRF private key.</p>
 <pre><code class="language-sh">jcli key to-public --input stake_pool_vrf.prv stake_pool_vrf.pub

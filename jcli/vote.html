@@ -171,9 +171,9 @@ Note that <strong>all committee members shall use the same CRS</strong>.</p>
 <p>We can also easily get its public representation as before:</p>
 <pre><code class="language-shell">jcli votes committee member-key to-public --input ./member.sk ./member.pk
 </code></pre>
-<h4 id="vote-encrypting-key"><a class="header" href="#vote-encrypting-key">Vote encrypting key</a></h4>
+<h4 id="election-public-key"><a class="header" href="#election-public-key">Election public key</a></h4>
 <p>This key (<em>public</em>) is the key <strong>every vote</strong> should be encrypted with.</p>
-<pre><code class="language-shell">jcli votes encrypting-key --keys mpk1 mpk2 mpk3 &gt; ./vote.pk
+<pre><code class="language-shell">jcli votes election-key --keys mpk1 mpk2 mpk3 &gt; ./vote.pk
 </code></pre>
 <p>Notice that we can always rebuild this key with the committee member public keys found
 within the <a href="#creating-a-vote-plan">voteplan certificate</a>.</p>
@@ -248,7 +248,7 @@ The process is similar to the public one, but we need to issue different certifi
 <p>First, we need to retrieve vote plans info:</p>
 <pre><code class="language-shell">jcli rest v0 vote active plans &gt; active_plans.json
 </code></pre>
-<p>If there is more than one vote plan in the this file, we also need to provide the id of the vote plan we are interested in to following commands. We can get the id of the first vote plan with:</p>
+<p>If there is more than one vote plan in the file, we also need to provide the id of the vote plan we are interested in to following commands. We can get the id of the first vote plan with:</p>
 <pre><code class="language-shell">...
 vote_plan_id=$(cat active_plans.json |jq '.[0].id')
 ...

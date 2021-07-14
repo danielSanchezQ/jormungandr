@@ -295,7 +295,7 @@ redundancy.</p>
 <p>Jörmungandr provides multiple additional layers to the <code>poldercast</code> default ones:
 the preferred list or the bottle in the sea.</p>
 <h4 id="preferred-list"><a class="header" href="#preferred-list">Preferred list</a></h4>
-<p>this is a special list that allows to connect multiple nodes together without relying
+<p>This is a special list that allows to connect multiple nodes together without relying
 on the auto peer discovery. All entries in the preferred list are also whitelisted
 automatically, so they cannot be quarantined.</p>
 <h5 id="configuration"><a class="header" href="#configuration">configuration:</a></h5>
@@ -325,17 +325,17 @@ part will not be necessary.</p>
 If not set, the node will generate a random ID, which is fine for a regular user.
 You can generate a public id with <strong>openssl</strong>, for example: <code>openssl rand -hex 24</code></p>
 <h3 id="topics_of_interest"><a class="header" href="#topics_of_interest"><code>topics_of_interest</code></a></h3>
-<p>This is optional an optional value to set. The default is:</p>
+<p>This is an optional value to set. The default is:</p>
 <pre><code class="language-yaml">messages: low
 blocks: normal
 </code></pre>
-<p>These value makes sense for most of the users that are not running stake pools or
+<p>These values make sense for most of the users that are not running stake pools or
 that are not even publicly reachable.</p>
-<p>However for a publicly reachable node, the recommended setting would be:</p>
+<p>However for a publicly reachable node, the recommended settings would be:</p>
 <pre><code class="language-yaml">messages: normal
 blocks: normal
 </code></pre>
-<p>and for a stake pool</p>
+<p>and for a stake pool:</p>
 <pre><code class="language-yaml">messages: high
 blocks: high
 </code></pre>

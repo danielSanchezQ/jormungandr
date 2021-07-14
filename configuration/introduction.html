@@ -152,7 +152,7 @@ It covers the network, logging and storage parameters.</p>
 <p>This is an common example of a Jörmungandr node configuration file typically named <code>node-config.yaml</code>, however your's will vary depending on your needs.
 Additionally, this configuration has been tested on a <em>specific Jörmungandr version</em> and may change with newer versions.
 It's important to keep in mind that the <code>trusted_peers</code> portion of this configuration will be different for each Cardano blockchain network.
-If you're trying to connect this node to a specific network, you need to know it's genesis block hash, and it's associated list of trusted peers.</p>
+If you're trying to connect this node to a specific network, you need to know its genesis block hash, and its associated list of trusted peers.</p>
 <p>Example Configuration - 1:</p>
 <pre><code class="language-YAML">---
 log:
@@ -236,14 +236,14 @@ The node configuration uses the <a href="https://en.wikipedia.org/wiki/YAML">YAM
 <p>Starting the node <code>jormungandr</code> with the command line option <code>--rewards-report-all</code> will
 collect a thorough report of all the reward distribution. It can then be accessed via the
 REST endpoints <code>/api/v0/rewards/history/1</code> or <code>/api/v0/rewards/epoch/10</code>.</p>
-<p><strong>this is not a recommended settings as it may take memory and may trigger some latency</strong>.</p>
+<p><strong>this is not a recommended setting as it may take memory and may trigger some latency</strong>.</p>
 <h3 id="handling-of-time-consuming-transactions"><a class="header" href="#handling-of-time-consuming-transactions">Handling of time-consuming transactions</a></h3>
 <p>By default we allow a single transaction to delay a block by 50 slots. This can
 be changed by adjusting the <code>block_hard_deadline</code> setting.</p>
 <h4 id="the-following-is-deprecated-and-will-be-removed"><a class="header" href="#the-following-is-deprecated-and-will-be-removed">The following is deprecated and will be removed</a></h4>
 <p>If you want to record the reward distributions in a directory it is possible to set
 the environment variable: <code>JORMUNGANDR_REWARD_DUMP_DIRECTORY=/PATH/TO/DIR/TO/WRITE/REWARD</code>.</p>
-<p>If an error occur while dumping the reward, the node will <strong>panic</strong> with an appropriate
+<p>If an error occurs while dumping the reward, the node will <strong>panic</strong> with an appropriate
 error message.</p>
 
                     </main>

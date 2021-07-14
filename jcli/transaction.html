@@ -225,9 +225,9 @@ Syntax is Go text template: https://golang.org/pkg/text/template/. (default: yam
 <p><code>--output &lt;output&gt;</code>               - write the info in the given file or print it to the standard output</p>
 </li>
 <li>
-<p><code>--staging &lt;staging-file&gt;</code>        - place where the transaction is going to be save during its staging phase.
+<p><code>--staging &lt;staging-file&gt;</code>        - place where the transaction is going to be saved during its staging phase.
 If a file is given, the transaction will be read from this file and modification will be written into this same file.
-If no file is given, the transaction will be read from the standard input and will be rendered in the standard output</p>
+If no file is given, the transaction will be read from the standard input and will be rendered in the standard output.</p>
 </li>
 </ul>
 <p>YAML printed on success</p>
@@ -259,7 +259,9 @@ status: sealed      # transaction status, can be &quot;balancing&quot;, &quot;fi
 </code></pre>
 <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
 <p>The following example focuses on using an utxo as input, the few differences when transfering from an account will be pointed out when necessary.
-There is also a script <a href="https://github.com/input-output-hk/jormungandr/blob/master/scripts/send-transaction">here</a> to send a transaction from a faucet account to a specific address which could be used as a reference.</p>
+Also, the simplified <code>make-transaction</code> command in  <code>jcli</code>  covers all this process. For more information run:</p>
+<pre><code class="language-sh">jcli transaction make-transaction --help
+</code></pre>
 <p>Let's use the following utxo as input and transfer 50 lovelaces to the destination address</p>
 <h2 id="input-utxo"><a class="header" href="#input-utxo">Input utxo</a></h2>
 <table><thead><tr><th>Field</th><th align="center">Value</th></tr></thead><tbody>
@@ -274,7 +276,7 @@ There is also a script <a href="https://github.com/input-output-hk/jormungandr/b
 <pre><code class="language-sh">jcli transaction new --staging tx
 </code></pre>
 <h2 id="add-input"><a class="header" href="#add-input">Add input</a></h2>
-<p>For the input, we need to reference the uxto with the <strong>UTXO's transaction ID</strong> and <strong>UTXO'S output index</strong> fields and we need to specify how much coins are there with the <strong>associated value</strong> field.</p>
+<p>For the input, we need to reference the utxo with the <strong>UTXO's transaction ID</strong> and <strong>UTXO'S output index</strong> fields and we need to specify how many coins there are with the <strong>associated value</strong> field.</p>
 <h3 id="example---utxo-address-as-input"><a class="header" href="#example---utxo-address-as-input">Example - UTXO address as Input</a></h3>
 <pre><code class="language-sh">jcli transaction add-input 55762218e5737603e6d27d36c8aacf8fcd16406e820361a8ac65c7dc663f6d1c 0 100 --staging tx
 </code></pre>
