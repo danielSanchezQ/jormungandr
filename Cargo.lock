@@ -4057,9 +4057,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-gelf"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "689da181977dd7240e6a7ae6579295b0a152c37534a52ead913991fe6bb4e972"
+checksum = "689232e9ff7d85320fc1cb54876f19fc466b00ca1adc3b4f35151de64764bb5d"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -4069,6 +4069,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing-core",
+ "tracing-futures",
  "tracing-subscriber",
 ]
 
